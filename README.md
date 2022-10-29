@@ -1,3 +1,3 @@
 # nac-sampling
-A package used for sampling non-adiabatic coupling datasets.
+A package used for faster sampling of non-adiabatic coupling datasets.
 
