@@ -17,4 +17,4 @@ Cargo.lock
 **/*.json
 
 # `out` binary
-/out/
+./out/
