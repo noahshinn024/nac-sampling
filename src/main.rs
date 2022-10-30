@@ -16,8 +16,14 @@ struct Args {
     #[arg(short, long, default_value_t = 100)]
     nstructures: usize,
 
-    #[arg(short, long)]
+    #[arg(short, long, default_value_t = String::from("hartree"))]
     units: String,
+
+    #[arg(short, long, default_value_t = String::from("out.json"))]
+    wf: String,
+
+    #[arg(short, long, default_value_t = false)]
+    verbose: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -30,9 +36,10 @@ struct Structure {
 }
 
 fn scale_e_units(energy: f64, units: String) -> f64 {
-    if units.eq("hartree") {
+    if units.eq("hartree") || units.eq("hartrees") {
         energy * 27.2107
-    } else if units.eq("kcal") || units.eq("kcal/mol") {
+    } else if units.eq("kcal") || units.eq("kcals") || units.eq("kcal/mol") || units.eq("kcals/mol")
+    {
         energy * 23.0609
     } else {
         energy
@@ -136,11 +143,16 @@ fn main() {
             res.push(s);
             cur_bin_sizes[bin_idx] = cur_bin_sizes[bin_idx] + 1;
             nadded_structures = nadded_structures + 1;
-            println!(
-                "adding to bin #{}; total: {}",
-                bin_idx, cur_bin_sizes[bin_idx]
-            );
+            if args.verbose {
+                println!(
+                    "adding to bin #{}; total: {}",
+                    bin_idx, cur_bin_sizes[bin_idx]
+                );
+            }
         }
         nseen_structures = nseen_structures + 1;
     }
+
+    let json = serde_json::to_string(&res).unwrap();
+    fs::write(args.wf, json).unwrap();
 }
