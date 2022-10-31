@@ -47,14 +47,14 @@ fn scale_e_units(energy: f64, units: String) -> f64 {
 }
 
 fn assign_sizes(nstructures: usize, nbins: usize) -> Vec<usize> {
-    let mut res = Vec::new();
+    let mut res = Vec::with_capacity(nbins);
     let mut c: usize = 0;
     let n: usize = nstructures / nbins as usize;
-    for _ in 0..(nbins - 1) {
-        res.push(n);
+    for i in 0..(nbins - 1) {
+        res[i] = n;
         c = c + n;
     }
-    res.push(nstructures - c);
+    res[nbins - 1] = nstructures - c;
     res
 }
 
@@ -82,20 +82,17 @@ fn main() {
 
     let mut nadded_structures = 0;
     let mut nseen_structures = 0;
-    let mut res: Vec<Structure> = Vec::new();
+    let mut res: Vec<Structure> = Vec::with_capacity(args.nstructures);
     let max_bin_sizes = assign_sizes(args.nstructures, NBINS);
     let mut cur_bin_sizes: [usize; NBINS] = [0; NBINS];
-    while nadded_structures < args.nstructures - 1 && nseen_structures < total_nstructures - 1 {
-        let e_diff: f64 = scale_e_units(
-            e_diffs_data
-                .get(nseen_structures)
-                .unwrap()
-                .as_f64()
-                .unwrap()
-                .abs(),
-            units.to_string(),
-        );
-        let bin_idx = get_bin(e_diff, NBINS);
+    while nadded_structures < args.nstructures && nseen_structures < total_nstructures {
+        let e_diff: f64 = e_diffs_data
+            .get(nseen_structures)
+            .unwrap()
+            .as_f64()
+            .unwrap();
+        let e_diff_ev: f64 = scale_e_units(e_diff.abs(), units.to_string());
+        let bin_idx = get_bin(e_diff_ev, NBINS);
         if cur_bin_sizes[bin_idx] < max_bin_sizes[bin_idx] {
             let species_raw = species_data
                 .get(nseen_structures)
@@ -140,7 +137,7 @@ fn main() {
                 nacs,
                 norm,
             };
-            res.push(s);
+            res[nadded_structures] = s;
             cur_bin_sizes[bin_idx] = cur_bin_sizes[bin_idx] + 1;
             nadded_structures = nadded_structures + 1;
             if args.verbose {
