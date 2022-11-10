@@ -4,8 +4,10 @@ use serde_json;
 use std::fs;
 
 //const UPPER_BOUNDS: &'static [&'static f64] = &[&0.1, &0.3, &0.7, &1.5, &f64::INFINITY];
-const UPPER_BOUNDS: [f64; 5] = [0.1, 0.3, 0.7, 1.5, f64::INFINITY];
-const NBINS: usize = 5;
+//const NBINS: usize = 5;
+//const UPPER_BOUNDS: [f64; 5] = [0.1, 0.3, 0.7, 1.5, f64::INFINITY];
+const NBINS: usize = 2;
+const UPPER_BOUNDS: [f64; NBINS] = [0.3, f64::INFINITY];
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -33,6 +35,7 @@ struct Structure {
     e_diff: f64,
     nacs: Vec<Vec<f64>>,
     norm: f64,
+    is_like_zero: u8,
 }
 
 fn scale_e_units(energy: f64, units: String) -> f64 {
@@ -50,11 +53,13 @@ fn assign_sizes(nstructures: usize, nbins: usize) -> Vec<usize> {
     let mut res = Vec::with_capacity(nbins);
     let mut c: usize = 0;
     let n: usize = nstructures / nbins as usize;
-    for i in 0..(nbins - 1) {
-        res[i] = n;
-        c = c + n;
+    let mut iter = nbins - 1;
+    while iter > 0 {
+        res.push(n);
+        c += n;
+        iter -= 1;
     }
-    res[nbins - 1] = nstructures - c;
+    res.push(nstructures - c);
     res
 }
 
@@ -130,15 +135,17 @@ fn main() {
                 })
                 .collect::<Vec<Vec<f64>>>();
             let norm = norms_data.get(nseen_structures).unwrap().as_f64().unwrap();
+            let is_like_zero = (e_diff < 0.3) as u8;
             let s = Structure {
                 species,
                 coords,
                 e_diff,
                 nacs,
                 norm,
+                is_like_zero,
             };
-            res[nadded_structures] = s;
-            cur_bin_sizes[bin_idx] = cur_bin_sizes[bin_idx] + 1;
+            res.push(s);
+            cur_bin_sizes[bin_idx] += 1;
             nadded_structures = nadded_structures + 1;
             if args.verbose {
                 println!(
