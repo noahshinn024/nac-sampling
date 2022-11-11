@@ -11,6 +11,7 @@ git clone https://github.com/noahshinn024/nac-sampling &&
 cd nac-sampling &&
 make
 ```
+The output binary will be in `./out`.
 
 ## To Run
 
