@@ -6,8 +6,8 @@ use std::fs;
 //const UPPER_BOUNDS: &'static [&'static f64] = &[&0.1, &0.3, &0.7, &1.5, &f64::INFINITY];
 //const NBINS: usize = 5;
 //const UPPER_BOUNDS: [f64; 5] = [0.1, 0.3, 0.7, 1.5, f64::INFINITY];
-const NBINS: usize = 2;
-const UPPER_BOUNDS: [f64; NBINS] = [0.3, f64::INFINITY];
+//const NBINS: usize = 2;
+//const UPPER_BOUNDS: [f64; NBINS] = [0.3, f64::INFINITY];
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -25,6 +25,21 @@ struct Args {
     wf: String,
 
     #[arg(short, long, default_value_t = false)]
+    classify: bool,
+
+    #[arg(short, long, default_value_t = String::from("e_diff"))]
+    classifyby: String,
+
+    #[arg(short, long, default_value_t = 0.3)]
+    classifybyvalue: f64,
+
+    #[arg(short, long, default_value_t = 5)]
+    nbins: usize,
+
+    #[arg(short, long, default_value_t = String::from("0.1 0.3 0.7 1.5 inf"))]
+    upperbounds: String,
+
+    #[arg(short, long, default_value_t = false)]
     verbose: bool,
 }
 
@@ -36,6 +51,25 @@ struct Structure {
     nacs: Vec<Vec<f64>>,
     norm: f64,
     is_like_zero: u8,
+}
+
+fn parse_upperbounds(s: String, nbins: usize) -> Result<Vec<f64>, String> {
+    fn parse_f64(string: &str) -> f64 {
+        if string.to_string() == String::from("inf") {
+            f64::INFINITY
+        } else {
+            string.parse().unwrap()
+        }
+    }
+    let lst: Vec<f64> = s.split_whitespace().map(parse_f64).collect();
+    let l = lst.len();
+    if l != nbins {
+        panic!(
+            "number of bins: {} does not match number of upper bounds: {} provided!",
+            nbins, l
+        );
+    }
+    Ok(lst)
 }
 
 fn scale_e_units(energy: f64, units: String) -> f64 {
@@ -50,7 +84,7 @@ fn scale_e_units(energy: f64, units: String) -> f64 {
 }
 
 fn assign_sizes(nstructures: usize, nbins: usize) -> Vec<usize> {
-    let mut res = Vec::with_capacity(nbins);
+    let mut res = Vec::<usize>::with_capacity(nbins);
     let mut c: usize = 0;
     let n: usize = nstructures / nbins as usize;
     let mut iter = nbins - 1;
@@ -63,9 +97,9 @@ fn assign_sizes(nstructures: usize, nbins: usize) -> Vec<usize> {
     res
 }
 
-fn get_bin(val: f64, nbins: usize) -> usize {
+fn get_bin(val: f64, nbins: usize, upperbounds: &Vec<f64>) -> usize {
     for i in 0..nbins {
-        if val < UPPER_BOUNDS[i] {
+        if val < upperbounds[i] {
             return i;
         }
     }
@@ -74,6 +108,13 @@ fn get_bin(val: f64, nbins: usize) -> usize {
 
 fn main() {
     let args = Args::parse();
+    let mut nbins = args.nbins;
+    let mut upperbounds = parse_upperbounds(args.upperbounds, args.nbins).unwrap();
+    if args.classify {
+        nbins = 2;
+        upperbounds = vec![args.classifybyvalue, f64::INFINITY];
+    }
+
     let units = &args.units.to_lowercase();
 
     let data = fs::read_to_string(args.file).expect("error with file");
@@ -87,9 +128,9 @@ fn main() {
 
     let mut nadded_structures = 0;
     let mut nseen_structures = 0;
-    let mut res: Vec<Structure> = Vec::with_capacity(args.nstructures);
-    let max_bin_sizes = assign_sizes(args.nstructures, NBINS);
-    let mut cur_bin_sizes: [usize; NBINS] = [0; NBINS];
+    let mut res: Vec<Structure> = Vec::<Structure>::with_capacity(args.nstructures);
+    let max_bin_sizes = assign_sizes(args.nstructures, nbins);
+    let mut cur_bin_sizes: Vec<usize> = Vec::<usize>::with_capacity(nbins);
     while nadded_structures < args.nstructures && nseen_structures < total_nstructures {
         let e_diff: f64 = e_diffs_data
             .get(nseen_structures)
@@ -97,7 +138,7 @@ fn main() {
             .as_f64()
             .unwrap();
         let e_diff_ev: f64 = scale_e_units(e_diff.abs(), units.to_string());
-        let bin_idx = get_bin(e_diff_ev, NBINS);
+        let bin_idx = get_bin(e_diff_ev, nbins, &upperbounds);
         if cur_bin_sizes[bin_idx] < max_bin_sizes[bin_idx] {
             let species_raw = species_data
                 .get(nseen_structures)
@@ -135,7 +176,10 @@ fn main() {
                 })
                 .collect::<Vec<Vec<f64>>>();
             let norm = norms_data.get(nseen_structures).unwrap().as_f64().unwrap();
-            let is_like_zero = (e_diff < 0.3) as u8;
+            let mut is_like_zero = 0;
+            if args.classify {
+                is_like_zero = (e_diff < 0.3) as u8;
+            }
             let s = Structure {
                 species,
                 coords,
