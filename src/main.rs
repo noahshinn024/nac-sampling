@@ -3,10 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
 
-//const UPPER_BOUNDS: &'static [&'static f64] = &[&0.1, &0.3, &0.7, &1.5, &f64::INFINITY];
-//const NBINS: usize = 5; const UPPER_BOUNDS: [f64; 5] = [0.1, 0.3, 0.7, 1.5, f64::INFINITY]; const NBINS: usize = 2;
-//const UPPER_BOUNDS: [f64; NBINS] = [0.3, f64::INFINITY];
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {

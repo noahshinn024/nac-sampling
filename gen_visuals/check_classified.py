@@ -1,21 +1,11 @@
 import sys
 import json
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
 from typing import Tuple
 
-
-nargs = len(sys.argv)
-if nargs < 2 or nargs > 6:
-    print(f'usage: [data file] [should display (default = True)] [should save (default = False)] [verbose (default = True)] [save to (default = check_classified.png)]')
-    sys.exit(1)
-
-DATA_FILE = sys.argv[1]
-SHOULD_DISPLAY = bool(sys.argv[2])
-SHOULD_SAVE = bool(sys.argv[3])
-VERBOSE = bool(sys.argv[4])
-SAVE_TO = sys.argv[5]
 NBINS = 2
 
 
@@ -32,6 +22,7 @@ def _split_extract_data(data: list) -> Tuple[list, list]:
     for structure in data:
         avg_nac_elem = _get_avg_nac_elem(structure['nacs'])
         if structure['is_like_zero']:
+            print(structure['is_like_zero'])
             is_like_zero_lst += [avg_nac_elem]
         else:
             is_not_like_zero_lst += [avg_nac_elem]
@@ -41,8 +32,8 @@ def check_classified(
         file: str,
         should_display: bool = True,
         should_save: bool = False,
-        verbose: bool = True,
-        save_to: str = 'check_classified.png'
+        save_to: str = 'check_classified.png',
+        verbose: bool = True
     ) -> None:
     data = _load(file)
     is_like_zero_data, is_not_like_zero_data = _split_extract_data(data)
@@ -60,6 +51,25 @@ def check_classified(
     if should_save:
         plt.savefig(save_to)
           
+def run() -> None:
+    parser = argparse.ArgumentParser(description='A classification dataset checker.')
+    parser.add_argument('-f', '--file', help='json file')
+    parser.add_argument('-d', '--display', default=True, help='whether or not to display histogram(s)')
+    parser.add_argument('-s', '--save', default=False, help='whether or not to save histogram(s) to png file')
+    parser.add_argument('--verbose', default=True, help='whether or not to log checkpoint to console')
+    parser.add_argument('--saveto', default='check_classified.png', help='png file in which to save histogram(s))')
+    args = vars(parser.parse_args())
+    if any(map(lambda x: x is None, args.values())):
+        print('must supply all arguments -> run `python check_classified.py --help` to see a complete list of options')
+    else:
+        check_classified(
+            file=args['file'],
+            should_display=args['display'],
+            should_save=args['save'],
+            save_to=args['saveto'],
+            verbose=args['verbose']
+        )
+    
 
 if __name__ == '__main__':
-    check_classified(DATA_FILE, SHOULD_DISPLAY, SHOULD_SAVE, VERBOSE, SAVE_TO)
+    run()
