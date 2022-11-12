@@ -2,7 +2,6 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -186,7 +185,7 @@ fn main() {
             let norm = norms_data.get(nseen_structures).unwrap().as_f64().unwrap();
             let mut is_like_zero = 0;
             if is_classify {
-                is_like_zero = (e_diff < 0.3) as u8;
+                is_like_zero = (e_diff_ev < 0.3) as u8;
             }
             let s = Structure {
                 species,
