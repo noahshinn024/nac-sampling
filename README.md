@@ -1,4 +1,4 @@
-# nac-sampling
+# Derivative Coupling Vector Sampling
 A package used for faster sampling and classification of non-adiabatic coupling datasets written in Rust.
 
 ## Requirements
@@ -15,7 +15,7 @@ The output binary will be in `./out`.
 
 ## To Run
 
-#### Downsampling Dataset Generation Example
+#### Downsampling dataset generation example
 ```
 ./out --file <file.json> --nstructures 1000 --nbins 5 /
 --upperbounds 0.1 0.3 0.7 1.5 inf --units hartree /
@@ -23,7 +23,7 @@ The output binary will be in `./out`.
 ```
 This command will generate a downsampled dataset split with `nstructures/nbins` `structures` in each `bin`. The dataset will be stored in `./out.json` unless specified by the `--wf` flag.
 
-#### Classification and Downsampling Dataset Generation Example
+#### Classification and downsampling dataset generation example
 ```
 ./out --file <file.json> --nstructures 1000 --classify true /
 --classifyby e_diff --classifybyvalue 0.3 --units hartree /
