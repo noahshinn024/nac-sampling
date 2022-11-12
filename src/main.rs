@@ -24,8 +24,8 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("out.json"))]
     wf: String,
 
-    #[arg(short, long, default_value_t = false)]
-    classify: bool,
+    #[arg(short, long, default_value_t = String::from("false"))]
+    classify: String,
 
     #[arg(short, long, default_value_t = String::from("e_diff"))]
     classifyby: String,
@@ -39,8 +39,8 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("0.1 0.3 0.7 1.5 inf"))]
     upperbounds: String,
 
-    #[arg(short, long, default_value_t = false)]
-    verbose: bool,
+    #[arg(short, long, default_value_t = String::from("false"))]
+    verbose: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -106,11 +106,23 @@ fn get_bin(val: f64, nbins: usize, upperbounds: &Vec<f64>) -> usize {
     return nbins - 1;
 }
 
+fn get_truth_value(string: &str) -> Result<bool, &'static str> {
+    match string {
+        "true" => Ok(true),
+        "t" => Ok(true),
+        "false" => Ok(false),
+        "f" => Ok(false),
+        _ => Err("value `{}` cannot be converted to a boolean"),
+    }
+}
+
 fn main() {
     let args = Args::parse();
     let mut nbins = args.nbins;
     let mut upperbounds = parse_upperbounds(args.upperbounds, args.nbins).unwrap();
-    if args.classify {
+    let is_classify = get_truth_value(&args.classify).unwrap();
+    let verbose = get_truth_value(&args.verbose).unwrap();
+    if is_classify {
         nbins = 2;
         upperbounds = vec![args.classifybyvalue, f64::INFINITY];
     }
@@ -177,7 +189,7 @@ fn main() {
                 .collect::<Vec<Vec<f64>>>();
             let norm = norms_data.get(nseen_structures).unwrap().as_f64().unwrap();
             let mut is_like_zero = 0;
-            if args.classify {
+            if is_classify {
                 is_like_zero = (e_diff < 0.3) as u8;
             }
             let s = Structure {
@@ -191,7 +203,7 @@ fn main() {
             res.push(s);
             cur_bin_sizes[bin_idx] += 1;
             nadded_structures = nadded_structures + 1;
-            if args.verbose {
+            if verbose {
                 println!(
                     "adding to bin #{}; total: {}",
                     bin_idx, cur_bin_sizes[bin_idx]
