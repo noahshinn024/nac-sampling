@@ -15,3 +15,5 @@ Cargo.lock
 
 # all data files
 **/*.json
+
+./out

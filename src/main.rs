@@ -3,12 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fs;
 
-//const UPPER_BOUNDS: &'static [&'static f64] = &[&0.1, &0.3, &0.7, &1.5, &f64::INFINITY];
-//const NBINS: usize = 5;
-//const UPPER_BOUNDS: [f64; 5] = [0.1, 0.3, 0.7, 1.5, f64::INFINITY];
-//const NBINS: usize = 2;
-//const UPPER_BOUNDS: [f64; NBINS] = [0.3, f64::INFINITY];
-
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -39,7 +33,7 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("0.1 0.3 0.7 1.5 inf"))]
     upperbounds: String,
 
-    #[arg(short, long, default_value_t = String::from("false"))]
+    #[arg(short, long, default_value_t = String::from("true"))]
     verbose: String,
 }
 
@@ -106,13 +100,16 @@ fn get_bin(val: f64, nbins: usize, upperbounds: &Vec<f64>) -> usize {
     return nbins - 1;
 }
 
-fn get_truth_value(string: &str) -> Result<bool, &'static str> {
-    match string {
+fn get_truth_value(s: &str) -> Result<bool, String> {
+    match s {
         "true" => Ok(true),
         "t" => Ok(true),
         "false" => Ok(false),
         "f" => Ok(false),
-        _ => Err("value `{}` cannot be converted to a boolean"),
+        _ => Err(format!(
+            "given value `{}` but unable to convert to boolean",
+            s
+        )),
     }
 }
 
@@ -142,7 +139,7 @@ fn main() {
     let mut nseen_structures = 0;
     let mut res: Vec<Structure> = Vec::<Structure>::with_capacity(args.nstructures);
     let max_bin_sizes = assign_sizes(args.nstructures, nbins);
-    let mut cur_bin_sizes: Vec<usize> = Vec::<usize>::with_capacity(nbins);
+    let mut cur_bin_sizes: Vec<usize> = vec![0; nbins];
     while nadded_structures < args.nstructures && nseen_structures < total_nstructures {
         let e_diff: f64 = e_diffs_data
             .get(nseen_structures)
@@ -190,7 +187,7 @@ fn main() {
             let norm = norms_data.get(nseen_structures).unwrap().as_f64().unwrap();
             let mut is_like_zero = 0;
             if is_classify {
-                is_like_zero = (e_diff < 0.3) as u8;
+                is_like_zero = (e_diff_ev < 0.3) as u8;
             }
             let s = Structure {
                 species,
