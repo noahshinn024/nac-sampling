@@ -13,7 +13,7 @@ struct Args {
     nstructures: usize,
 
     #[arg(short, long, default_value_t = String::from("hartree"))]
-    units: String,
+    units_in: String,
 
     #[arg(short, long, default_value_t = String::from("out.json"))]
     wf: String,
@@ -124,7 +124,7 @@ fn main() {
         upperbounds = vec![args.classifybyvalue, f64::INFINITY];
     }
 
-    let units = &args.units.to_lowercase();
+    let units = &args.units_in.to_lowercase();
 
     let data = fs::read_to_string(args.file).expect("error with file");
     let json_data: serde_json::Value = serde_json::from_str(&data).expect("invalid JSON");
@@ -192,7 +192,7 @@ fn main() {
             let s = Structure {
                 species,
                 coords,
-                e_diff,
+                e_diff: e_diff_ev,
                 nacs,
                 norm,
                 is_like_zero,
