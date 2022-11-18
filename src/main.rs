@@ -137,16 +137,16 @@ fn main() {
 
     let mut nadded_structures = 0;
     let mut nseen_structures = 0;
-    let mut res: Vec<Structure> = Vec::<Structure>::with_capacity(args.nstructures);
+    //let mut res: Vec<Structure> = Vec::<Structure>::with_capacity(args.nstructures);
     let max_bin_sizes = assign_sizes(args.nstructures, nbins);
     let mut cur_bin_sizes: Vec<usize> = vec![0; nbins];
 
-    let mut species_res: Vec<String> = Vec<String>::with_capacity(args.nstructures);
-    let mut coords_res: Vec<Vec<f64>> = Vec<Vec<f64>>::with_capacity(args.nstructures);
-    let mut e_diffs_res: Vec<f64> = Vec<f64>::with_capacity(args.nstructures);
-    let mut nacs_res: Vec<Vec<f64>> = Vec<Vec<f64>>::with_capacity(args.nstructures);
-    let mut norms_res: Vec<f64> = Vec<f64>::with_capacity(args.nstructures);
-    let mut is_like_zero_res: Vec<u8> = Vec<u8>::with_capacity(args.nstructures);
+    let mut species_res: Vec<Vec<String>> = Vec::<Vec<String>>::with_capacity(args.nstructures);
+    let mut coords_res: Vec<Vec<Vec<f64>>> = Vec::<Vec<Vec<f64>>>::with_capacity(args.nstructures);
+    let mut e_diffs_res: Vec<f64> = Vec::<f64>::with_capacity(args.nstructures);
+    let mut nacs_res: Vec<Vec<Vec<f64>>> = Vec::<Vec<Vec<f64>>>::with_capacity(args.nstructures);
+    let mut norms_res: Vec<f64> = Vec::<f64>::with_capacity(args.nstructures);
+    let mut is_like_zero_res: Vec<u8> = Vec::<u8>::with_capacity(args.nstructures);
     while nadded_structures < args.nstructures && nseen_structures < total_nstructures {
         let e_diff: f64 = e_diffs_data
             .get(nseen_structures)
