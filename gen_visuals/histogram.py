@@ -7,7 +7,7 @@ NBINS = 20
 with open('./data-nacs.json') as f:
     data_orig = json.load(f)
     orig = np.abs(np.asarray(data_orig['nacs'])).mean(axis=(1, 2))
-    orig_energies = np.asarray(data_orig['energy_differences'])
+    orig_energies = np.asarray(data_orig['energy_differences']) * 27.2114
 
 # with open('./out.json') as f:
     # data_sampled = json.load(f)
@@ -15,8 +15,8 @@ with open('./data-nacs.json') as f:
     # sampled = np.stack([np.asarray(sample['e_diff']) for sample in data_sampled], axis=0)
 
 fig, axs = plt.subplots()
-axs.hist(orig_energies)
-axs.set_xlabel('energy differences (hartrees)')
+axs.hist(orig_energies, range=(-1.0, 0.0))
+axs.set_xlabel('energy differences (eVs)')
 axs.set_ylabel('count')
 # plt.show()
 plt.savefig('e_diff.png')
