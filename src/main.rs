@@ -140,6 +140,13 @@ fn main() {
     let mut res: Vec<Structure> = Vec::<Structure>::with_capacity(args.nstructures);
     let max_bin_sizes = assign_sizes(args.nstructures, nbins);
     let mut cur_bin_sizes: Vec<usize> = vec![0; nbins];
+
+    let mut species_res: Vec<String> = Vec<String>::with_capacity(args.nstructures);
+    let mut coords_res: Vec<Vec<f64>> = Vec<Vec<f64>>::with_capacity(args.nstructures);
+    let mut e_diffs_res: Vec<f64> = Vec<f64>::with_capacity(args.nstructures);
+    let mut nacs_res: Vec<Vec<f64>> = Vec<Vec<f64>>::with_capacity(args.nstructures);
+    let mut norms_res: Vec<f64> = Vec<f64>::with_capacity(args.nstructures);
+    let mut is_like_zero_res: Vec<u8> = Vec<u8>::with_capacity(args.nstructures);
     while nadded_structures < args.nstructures && nseen_structures < total_nstructures {
         let e_diff: f64 = e_diffs_data
             .get(nseen_structures)
@@ -189,15 +196,12 @@ fn main() {
             if is_classify {
                 is_like_zero = (e_diff_ev < 0.3) as u8;
             }
-            let s = Structure {
-                species,
-                coords,
-                e_diff: e_diff_ev,
-                nacs,
-                norm,
-                is_like_zero,
-            };
-            res.push(s);
+            species_res.push(species);
+            coords_res.push(coords);
+            e_diffs_res.push(e_diff);
+            nacs_res.push(nacs);
+            norms_res.push(norm);
+            is_like_zero_res.push(is_like_zero);
             cur_bin_sizes[bin_idx] += 1;
             nadded_structures = nadded_structures + 1;
             if verbose {
