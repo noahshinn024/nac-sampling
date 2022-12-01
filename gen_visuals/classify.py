@@ -3,15 +3,13 @@ import json
 """
 BIN KEY:
     0: zero
-    1: [-0.2, -0.1625)
-    2: [-0.1625, -0.125)
-    3: [-0.125, -0.0875)
-    4: [-0.0875, -0.05)
-    5: infinity
+    1: [-0.2, -0.125)
+    2: [-0.125, -0.05)
+    3: infinity
 
 """
 
-NBINS = 6
+NBINS = 4
 
 with open('./data-nacs.json', 'r') as f:
     data = json.load(f)
@@ -22,16 +20,12 @@ with open('./data-nacs.json', 'r') as f:
         mag = abs(data['energy_differences'][i] * 27.2107)
         if mag > 0.2:
             bins += [0]
-        elif mag > 0.1625:
-            bins += [1]
         elif mag > 0.125:
-            bins += [2]
-        elif mag > 0.0875:
-            bins += [3]
+            bins += [1]
         elif mag > 0.05:
-            bins += [4]
+            bins += [2]
         else:
-            bins += [5]
+            bins += [3]
 
     new_data = {}
     new_data['species'] = data['atom_types']
@@ -51,8 +45,6 @@ with open(f'./nacs-{NBINS}-bins.json', 'r') as f:
     zero = 0
     one = 0
     two = 0
-    three = 0
-    four = 0
     infinity = 0
     for i in range(nstructures):
         b = data['bin'][i]
@@ -63,10 +55,6 @@ with open(f'./nacs-{NBINS}-bins.json', 'r') as f:
         elif b == 2:
             two += 1
         elif b == 3:
-            three += 1
-        elif b == 4:
-            four += 1
-        elif b == 5:
             infinity += 1
         else:
             import sys
@@ -77,8 +65,6 @@ with open(f'./nacs-{NBINS}-bins.json', 'r') as f:
     print(f'zero: {zero}, {(zero / nstructures):.4f}')
     print(f'one: {one}, {(one / nstructures):.4f}')
     print(f'two: {two}, {(two / nstructures):.4f}')
-    print(f'three: {three}, {(three / nstructures):.4f}')
-    print(f'four: {four}, {(four / nstructures):.4f}')
     print(f'infinity: {infinity}, {(infinity / nstructures):.4f}')
 
 
